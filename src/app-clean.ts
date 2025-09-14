@@ -20,10 +20,14 @@ export class OrderManagement{
         return this.orders
     }
     addOrders(item:string , price: number){
-        const order:Order ={id:this.orders.length+1, item, price};
-        this.validator.validate(order);
-        this.orders.push(order);
-    }
+        try{
+            const order:Order ={id:this.orders.length+1, item, price};
+            this.validator.validate(order);
+            this.orders.push(order);
+    }catch(e:any){
+        throw new Error("Order Management error adding order:"+e.message)
+        }
+}
     fetchOrder(id:number){
         return this.getOrders().find(order =>order.id===id)
     }
@@ -50,9 +54,11 @@ interface IPossibleItems{
     getPossibleItems():string[];
 }
 export class Validator implements IValidator{
-    constructor(private rules:IValidator[]){
-
-    }
+    private rules:IValidator[]=[
+        new PriceValidator(),
+        new MaxPriceValidator(),
+        new ItemValidator(),
+    ]
     validate(order:Order):void{
         this.rules.forEach(rule=>rule.validate(order));
 
