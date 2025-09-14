@@ -1,5 +1,7 @@
 //SOLID Principles 
 
+import logger from "./util/logger";
+
 // 1- Single Responsibility Principle (SRP)
 // 2- Open Closed Principle (OCP)
 // 3- Liskov Subsititution Principle (LSP)
@@ -14,6 +16,7 @@ export interface Order{
 export class OrderManagement{
     private orders: Order[] = [];
     constructor(private validator:IValidator,private calculator: ICalculator){
+        logger.debug("OrderManagement instance created");
 
     }
     getOrders(){
@@ -29,7 +32,11 @@ export class OrderManagement{
         }
 }
     fetchOrder(id:number){
-        return this.getOrders().find(order =>order.id===id)
+        const order=this.getOrders().find(order =>order.id===id);
+        if(!order){
+            logger.warn(`Order with ID:${id} not found`);
+        }
+        return order;
     }
     getTotalRevenue(){
         return this.calculator.getRevenue(this.orders);
@@ -82,13 +89,14 @@ export class ItemValidator implements IValidator, IPossibleItems{
         ]; 
         validate(order:Order){
             if( !ItemValidator.possibleItems.includes(order.item)){
-            throw new Error(`Invalid item. Must be one of ${ItemValidator.possibleItems.join(", ")}`);
+                throw new Error(`Invalid item. Must be one of ${ItemValidator.possibleItems.join(", ")}`);
         }
     }  
 }     
 export class PriceValidator implements IValidator{
     validate(order:Order){
         if (order.price <=0){
+            logger.error(`Price is negative, ${order.item}`)
             throw new Error ("Price must be greater than 0")
         }
     }
