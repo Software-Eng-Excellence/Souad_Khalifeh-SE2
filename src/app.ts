@@ -1,55 +1,106 @@
+//SOLID Principles 
 
-const possibleItems = [
-  "Sponge",
-  "Chocolate",
-  "Fruit",
-  "Red Velvet",
-  "Birthday",
-  "Carrot",
-  "Marble",
-  "Coffee",
-];
+// 1- Single Responsibility Principle (SRP)
+// 2- Open Closed Principle (OCP)
+// 3- Liskov Substitution Principle (LSP)
+// 4- Interface Segregation Principle (ISP)
+// 5- Dependency Inversion Principle (DIP)
+export interface Order{
+    id: number;
+    price: number;
+    item: string;
 
-const orders = [
-  { id: 1, item: "Sponge", price: 15 },
-  { id: 2, item: "Chocolate", price: 20 },
-  { id: 3, item: "Fruit", price: 18 },
-  { id: 4, item: "Red Velvet", price: 25 },
-  { id: 5, item: "Coffee", price: 8 },
-];
-
-let orderId = 6; // Start new orders from ID 6
-
-// Adding a new order directly
-const newItem = "Marble";
-const newPrice = 22;
-
-if (!possibleItems.includes(newItem)) {
-  throw new Error(`Invalid item. Must be one of: ${possibleItems.join(", ")}`);
 }
-if (newPrice <= 0) {
-  throw new Error("Price must be greater than zero");
+export class OrderManagement{
+    //get order
+    private orders: Order[] = [];
+    constructor(private validator: Validator,private calculator: ICalculator){
+
+    } 
+    getOrders(){
+        return this.orders
+    }
+    addOrders(item:string , price: number){
+        try 
+        {
+        const order:Order ={id:this.orders.length+1, item, price};
+        this.validator.validate(order);
+        this.orders.push(order);
+      }
+        catch (error:any) {
+           throw new Error(`[Order Management]Failed to add order: ${error.message}`);
+        }
+    }
+    fetchOrder(id:number){
+        return this.getOrders().find(order =>order.id===id)
+    }
+    getTotalRevenue(){
+        return this.calculator.getRevenue(this.orders);
+    }
+    getAverageBuyPower(){
+        return this.calculator.getAverageBuyPower(this.orders);
+    }
+}
+interface IValidator{
+    validate(order:Order):void;
+}
+export class Validator implements IValidator{
+    constructor(private rules:IValidator[]){
+
+    }
+
+    validate(order:Order):void{
+        this.rules.forEach(rule=>rule.validate(order));
+
+    }
+
 }
 
-const newOrder = { id: orderId++, item: newItem, price: newPrice };
-orders.push(newOrder);
+class ItemValidator implements IValidator{
+    private static possibleItems = [
+        "Sponge",
+        "Chocolate",
+        "Fruit",
+        "Red Velvet",
+        "Birthday",
+        "Carrot",
+        "Marble",
+        "Coffee",
+        ]; 
+        validate(order:Order){
+            if( !ItemValidator.possibleItems.includes(order.item)){
+            throw new Error(`Invalid item. Must be one of ${ItemValidator.possibleItems.join(", ")}`);
+        }
+    }  
+}     
+export class PriceValidator implements IValidator{
+    validate(order:Order){
+        if (order.price <=0){
+            throw new Error ("Price must be greater than 0")
+        }
+    }
+}
 
-console.log("Orders after adding a new order:", orders);
+export class MaxPriceValidator implements IValidator{
+    validate(order:Order){
+        if (order.price>100){
+            throw new Error ("Price must be less than 100")
+        }
+    }
+}
+interface ICalculator{ 
+    getRevenue(orders:Order[]):number;
+    getAverageBuyPower(orders:Order[]):number;
+}
+export class FinanceCalculator{
+    // Calculate Total Revenue 
+    public getRevenue(orders:Order[]){
+        return  orders.reduce((total, order) => total + order.price, 0);
+    }
+    //Average Buy Power directly
+    public getAverageBuyPower(orders:Order[]){
+        return orders.length === 0 ? 0 : this.getRevenue(orders) / orders.length;
+        
+    }
+}
 
-// Calculate Total Revenue directly
-const totalRevenue = orders.reduce((total, order) => total + order.price, 0);
-console.log("Total Revenue:", totalRevenue);
-
-// Calculate Average Buy Power directly
-const averageBuyPower = orders.length === 0 ? 0 : totalRevenue / orders.length;
-console.log("Average Buy Power:", averageBuyPower.toFixed(2));
-
-// Fetching an order directly
-const fetchId = 2;
-const fetchedOrder = orders.find(order => order.id === fetchId);
-console.log("Order with ID 2:", fetchedOrder);
-
-// Attempt to fetch a non-existent order
-const nonExistentId = 10;
-const nonExistentOrder = orders.find(order => order.id === nonExistentId);
-console.log("Order with ID 10 (non-existent):", nonExistentOrder);
