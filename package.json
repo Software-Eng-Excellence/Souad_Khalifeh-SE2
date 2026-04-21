@@ -43,6 +43,7 @@
     "csv-parse": "^6.2.1",
     "csv-stringify": "^6.7.0",
     "dotenv": "^17.2.2",
+    "json-parse": "^1.0.3",
     "nodejs": "^0.0.0",
     "winston": "^3.17.0"
   }
