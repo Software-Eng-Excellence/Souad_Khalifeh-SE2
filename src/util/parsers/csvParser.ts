@@ -3,7 +3,12 @@ import { promises as fs } from 'fs'; //file system module with promises
 import {parse as csvParse} from 'csv-parse';
 import {stringify as csvStringify} from 'csv-stringify';
 
-
+/* 
+* Reads a CSV file and return its contents as a 2D array of strings 
+* @param filePath - the path to the CSV file
+* @param includeHeader - whether to include the header row in the output (default: false)
+* @returns a promise that resolves to a 2D array of strings representing the CSV data
+*/
 export async function readCSVFile(filePath:string,includeHeader: boolean =false): Promise<string[][]> {
     try{
         const fileContent = await fs.readFile(filePath, 'utf-8');
@@ -13,7 +18,7 @@ export async function readCSVFile(filePath:string,includeHeader: boolean =false)
                 skip_empty_lines: true,
             },(err, records: string[][])=>{
                 if(err) reject(err);
-                // if (!includeHeader)records.shift();
+                if (!includeHeader)records.shift();
                 resolve(records);
             });
         });
