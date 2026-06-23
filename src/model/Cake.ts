@@ -1,7 +1,3 @@
-/**
- * Class model representing a Cake order.
- * Properties are private (encapsulation) and exposed only through getters.
- */
 export class Cake {
     constructor(
         private id: number,
